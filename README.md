@@ -25,11 +25,12 @@ The stack includes fixes that are not yet available in stable Coolify:
 1. Push this directory to a GitHub repository.
 2. In Coolify, create a **Private Repository (with GitHub App)** resource.
 3. Select this repository and choose the **Docker Compose** build pack.
-4. Use branch `main`, base directory `/`, and Compose file `/compose.yaml`.
+4. Use branch `main`, base directory `/`, and Compose file
+   `/docker-compose.yaml` (Coolify's default).
 5. Add the variables from `.env.example` in Coolify. Generate new values for
    every `CHANGE_ME` entry and store them only in Coolify. Do not add a
    `BUZZ_IMAGE_TAG` override during normal operation; the reviewed value in
-   `compose.yaml` controls updates.
+   `docker-compose.yaml` controls updates.
 6. Assign `https://YOUR_DOMAIN:3000` to the `buzz` service. The `:3000` tells
    Coolify which internal container port to proxy; the public URL still uses
    normal HTTPS on port 443.

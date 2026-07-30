@@ -12,3 +12,5 @@
 - Kept all state in named volumes and all secrets outside Git.
 - Removed GitHub Actions update automation so deployment and updates do not
   depend on Actions minutes or organization workflow-write permissions.
+- Renamed the Compose file to `/docker-compose.yaml`, matching Coolify's
+  default Git Compose location.

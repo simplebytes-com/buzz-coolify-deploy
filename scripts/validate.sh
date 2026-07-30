@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-compose_file="${repo_root}/compose.yaml"
+compose_file="${repo_root}/docker-compose.yaml"
 env_file="${repo_root}/.env.example"
 portable_compose="$(mktemp "${TMPDIR:-/tmp}/buzz-compose.XXXXXX.yaml")"
 trap 'rm -f "$portable_compose"' EXIT
