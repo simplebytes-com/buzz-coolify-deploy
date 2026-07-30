@@ -14,3 +14,6 @@
   depend on Actions minutes or organization workflow-write permissions.
 - Renamed the Compose file to `/docker-compose.yaml`, matching Coolify's
   default Git Compose location.
+- Deployed the stack to the Nutrified Coolify production environment at
+  `buzz.nutrified.pl`, with DNS-only Cloudflare routing, managed TLS, and
+  persistent production storage.
