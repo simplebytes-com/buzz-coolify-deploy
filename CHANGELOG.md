@@ -17,3 +17,6 @@
 - Deployed the stack to the Nutrified Coolify production environment at
   `buzz.nutrified.pl`, with DNS-only Cloudflare routing, managed TLS, and
   persistent production storage.
+- Enabled the Cloudflare proxy for `buzz.nutrified.pl`, excluded the relay from
+  the zone-wide website redirect, and enforced per-hostname Strict TLS to the
+  Coolify origin while preserving WebSocket and Buzz Desktop CORS traffic.
