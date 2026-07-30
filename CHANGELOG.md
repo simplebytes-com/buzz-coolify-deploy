@@ -10,4 +10,3 @@
 - Replaced the invalid `curl` relay healthcheck with the upstream Bash
   `/dev/tcp` readiness probe.
 - Kept all state in named volumes and all secrets outside Git.
-

@@ -1,0 +1,68 @@
+name: Check for Buzz relay update
+
+on:
+  schedule:
+    - cron: "17 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: buzz-relay-image-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out deployment repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest successful upstream image
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(./scripts/latest-successful-buzz-image.sh)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          ./scripts/set-buzz-image-tag.sh "$tag"
+
+      - name: Validate candidate deployment
+        run: ./scripts/validate.sh
+
+      - name: Open or update image pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          if git diff --quiet -- compose.yaml; then
+            echo "Buzz relay already uses ${TAG}." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          branch="automation/buzz-relay-${TAG}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C "$branch"
+          git add compose.yaml
+          git commit -m "chore: update Buzz relay image to ${TAG}"
+          git push --force-with-lease origin "HEAD:refs/heads/${branch}"
+
+          if gh pr view "$branch" --json url >/dev/null 2>&1; then
+            pr_url="$(gh pr view "$branch" --json url --jq .url)"
+          else
+            pr_url="$(
+              gh pr create \
+                --base main \
+                --head "$branch" \
+                --title "chore: update Buzz relay image to ${TAG}" \
+                --body "Updates Buzz Relay to the immutable image produced by the latest successful upstream Docker workflow. Review Block's upstream changes before merging; merge triggers the Coolify auto-deploy."
+            )"
+          fi
+
+          echo "Update pull request: ${pr_url}" >> "$GITHUB_STEP_SUMMARY"
+

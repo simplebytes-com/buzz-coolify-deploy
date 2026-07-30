@@ -28,7 +28,9 @@ The stack includes fixes that are not yet available in stable Coolify:
 3. Select this repository and choose the **Docker Compose** build pack.
 4. Use branch `main`, base directory `/`, and Compose file `/compose.yaml`.
 5. Add the variables from `.env.example` in Coolify. Generate new values for
-   every `CHANGE_ME` entry and store them only in Coolify.
+   every `CHANGE_ME` entry and store them only in Coolify. Do not add a
+   `BUZZ_IMAGE_TAG` override during normal operation; the reviewed value in
+   `compose.yaml` controls updates.
 6. Assign `https://YOUR_DOMAIN:3000` to the `buzz` service. The `:3000` tells
    Coolify which internal container port to proxy; the public URL still uses
    normal HTTPS on port 443.
@@ -64,6 +66,11 @@ The scheduled workflow checks Block's latest successful `Docker image` workflow
 on `main`. If the immutable image tag changed, it opens a pull request updating
 `compose.yaml`.
 
+In the deployment repository, enable:
+
+- **Settings → Actions → General → Workflow permissions → Read and write**
+- **Allow GitHub Actions to create and approve pull requests**
+
 Review the upstream changes and merge the pull request. Coolify then
 automatically redeploys the new image. The persistent volumes and all stable
 secrets remain unchanged.
@@ -83,4 +90,3 @@ than a server-local service template.
 If you do migrate, back up all four named volumes first and preserve the relay
 private key, owner public key, HMAC secret, database credentials, Redis
 credentials, and S3 credentials.
-
