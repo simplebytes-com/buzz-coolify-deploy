@@ -4,10 +4,9 @@ This repository deploys Buzz Relay as a Git-backed Docker Compose application
 on Coolify. It deliberately does not fork Buzz:
 
 - Buzz runs from Block's published `ghcr.io/block/buzz` image.
-- The image is pinned to an immutable `sha-xxxxxxx` tag from a successful
-  upstream image build.
+- The image tracks Block's official `main` tag by default.
 - This repository owns only deployment policy and the temporary Coolify fixes.
-- Merging a reviewed image update pull request triggers Coolify auto-deploy.
+- No GitHub Actions or local Buzz build is required.
 
 ## Included fixes
 
@@ -34,8 +33,7 @@ The stack includes fixes that are not yet available in stable Coolify:
 6. Assign `https://YOUR_DOMAIN:3000` to the `buzz` service. The `:3000` tells
    Coolify which internal container port to proxy; the public URL still uses
    normal HTTPS on port 443.
-7. Enable **Auto Deploy** in the application's Advanced settings.
-8. Deploy, then verify:
+7. Deploy, then verify:
 
    ```bash
    curl -fsS https://YOUR_DOMAIN/_liveness
@@ -62,30 +60,27 @@ not an `npub1...` value and not a private key.
 
 ## Updating Buzz
 
-The scheduled workflow checks Block's latest successful `Docker image` workflow
-on `main`. If the immutable image tag changed, it opens a pull request updating
-`compose.yaml`.
+No GitHub Actions are used. The Compose file tracks
+`ghcr.io/block/buzz:main` and sets `pull_policy: always`.
 
-In the deployment repository, enable:
+To update:
 
-- **Settings → Actions → General → Workflow permissions → Read and write**
-- **Allow GitHub Actions to create and approve pull requests**
+1. Open the Buzz application in Coolify.
+2. Click **Redeploy**.
+3. Coolify pulls the current official `main` image and recreates the Buzz
+   container. The persistent volumes and stable secrets remain unchanged.
+4. Re-run the liveness/readiness checks and connect once from Buzz Desktop.
 
-Review the upstream changes and merge the pull request. Coolify then
-automatically redeploys the new image. The persistent volumes and all stable
-secrets remain unchanged.
-
-To check immediately, run the **Check for Buzz relay update** workflow manually.
-
-To roll back, revert the image-update commit or restore the previous
-`BUZZ_IMAGE_TAG` in Coolify, then redeploy.
+For a controlled freeze or rollback, set `BUZZ_IMAGE_TAG` in Coolify to a known
+immutable upstream tag such as `sha-63496cc`, then redeploy. Remove that
+override to resume tracking `main`.
 
 ## Migration to Coolify's official template
 
 Keep this Git-backed deployment until the official Buzz service reaches stable
 Coolify and includes all three fixes above. There is no operational need to
-migrate: the Git-backed application provides better version review and rollback
-than a server-local service template.
+migrate; the wrapper remains small and Buzz itself still comes directly from
+Block's image.
 
 If you do migrate, back up all four named volumes first and preserve the relay
 private key, owner public key, HMAC secret, database credentials, Redis

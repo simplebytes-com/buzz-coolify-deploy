@@ -15,8 +15,10 @@ services:
     exclude_from_hc: true
 
   buzz:
-    # Use an immutable tag from a successful upstream image workflow.
-    image: ghcr.io/block/buzz:${BUZZ_IMAGE_TAG:-sha-63496cc}
+    # Tracks Block's official Buzz main image. Set BUZZ_IMAGE_TAG to an
+    # immutable sha-xxxxxxx tag in Coolify if a temporary production pin is
+    # preferred.
+    image: ghcr.io/block/buzz:${BUZZ_IMAGE_TAG:-main}
     pull_policy: always
     environment:
       BUZZ_BIND_ADDR: 0.0.0.0:3000

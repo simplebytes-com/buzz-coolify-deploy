@@ -25,7 +25,7 @@ docker compose --env-file "$env_file" -f "$portable_compose" config --quiet
 grep -q 'tauri://localhost,http://tauri.localhost' "$compose_file"
 grep -q 'chown -R 1000:1000 /data/git' "$compose_file"
 grep -q '/dev/tcp/127.0.0.1/8080' "$compose_file"
-grep -Eq '\$\{BUZZ_IMAGE_TAG:-sha-[0-9a-f]{7}\}' "$compose_file"
+grep -Eq '\$\{BUZZ_IMAGE_TAG:-(main|sha-[0-9a-f]{7})\}' "$compose_file"
 
 if grep -Eq '^networks:' "$compose_file"; then
   echo "Do not define custom networks in a Coolify Compose deployment." >&2
@@ -42,4 +42,3 @@ if ! git -C "$repo_root" check-ignore -q .env; then
 fi
 
 echo "Buzz Coolify deployment validation passed."
-
