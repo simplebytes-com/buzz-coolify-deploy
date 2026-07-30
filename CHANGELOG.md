@@ -20,3 +20,8 @@
 - Enabled the Cloudflare proxy for `buzz.nutrified.pl`, excluded the relay from
   the zone-wide website redirect, and enforced per-hostname Strict TLS to the
   Coolify origin while preserving WebSocket and Buzz Desktop CORS traffic.
+- Created a dedicated private Cloudflare R2 bucket for Buzz media and object
+  storage.
+- Replaced the in-stack MinIO dependency with configurable external
+  S3-compatible storage, defaulting to Cloudflare R2's `auto` signing region
+  and path-style addressing.

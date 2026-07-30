@@ -26,6 +26,13 @@ grep -q 'tauri://localhost,http://tauri.localhost' "$compose_file"
 grep -q 'chown -R 1000:1000 /data/git' "$compose_file"
 grep -q '/dev/tcp/127.0.0.1/8080' "$compose_file"
 grep -Eq '\$\{BUZZ_IMAGE_TAG:-(main|sha-[0-9a-f]{7})\}' "$compose_file"
+grep -q 'BUZZ_S3_ENDPOINT: ${BUZZ_S3_ENDPOINT:?Set BUZZ_S3_ENDPOINT}' "$compose_file"
+grep -q 'BUZZ_S3_REGION: ${BUZZ_S3_REGION:-auto}' "$compose_file"
+
+if grep -Eq '^[[:space:]]+minio(-init)?:' "$compose_file"; then
+  echo "Production object storage must use the external S3-compatible provider." >&2
+  exit 1
+fi
 
 if grep -Eq '^networks:' "$compose_file"; then
   echo "Do not define custom networks in a Coolify Compose deployment." >&2

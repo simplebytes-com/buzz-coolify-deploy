@@ -28,8 +28,9 @@ The stack includes fixes that are not yet available in stable Coolify:
 4. Use branch `main`, base directory `/`, and Compose file
    `/docker-compose.yaml` (Coolify's default).
 5. Add the variables from `.env.example` in Coolify. Generate new values for
-   every `CHANGE_ME` entry and store them only in Coolify. Do not add a
-   `BUZZ_IMAGE_TAG` override during normal operation; the reviewed value in
+   every `CHANGE_ME` entry and store them only in Coolify. Create the private
+   S3-compatible bucket before deploying. Do not add a `BUZZ_IMAGE_TAG`
+   override during normal operation; the reviewed value in
    `docker-compose.yaml` controls updates.
 6. Assign `https://YOUR_DOMAIN:3000` to the `buzz` service. The `:3000` tells
    Coolify which internal container port to proxy; the public URL still uses
@@ -41,7 +42,25 @@ The stack includes fixes that are not yet available in stable Coolify:
    curl -fsS https://YOUR_DOMAIN/_readiness
    ```
 
-Do not expose Postgres, Redis, MinIO, port 8080, or port 9102 publicly.
+Do not expose Postgres, Redis, port 8080, or port 9102 publicly.
+
+## Cloudflare R2 storage
+
+Production media and object data is stored in a private Cloudflare R2 bucket.
+Create a bucket-scoped **Object Read & Write** token and configure:
+
+```dotenv
+BUZZ_S3_ENDPOINT=https://YOUR_CLOUDFLARE_ACCOUNT_ID.r2.cloudflarestorage.com
+BUZZ_S3_REGION=auto
+BUZZ_S3_ADDRESSING_STYLE=path
+BUZZ_S3_BUCKET=buzz-nutrified-media
+BUZZ_S3_ACCESS_KEY=YOUR_R2_ACCESS_KEY_ID
+BUZZ_S3_SECRET_KEY=YOUR_R2_SECRET_ACCESS_KEY
+```
+
+Do not enable the public `r2.dev` URL or attach a public bucket domain. Buzz
+keeps the bucket private and serves authorized media through
+`https://buzz.nutrified.pl/media`.
 
 ## Generating stable secrets
 
@@ -52,12 +71,13 @@ openssl rand -hex 32  # BUZZ_RELAY_PRIVATE_KEY
 openssl rand -hex 32  # BUZZ_GIT_HOOK_HMAC_SECRET
 openssl rand -base64 36 | tr -d '\n'  # POSTGRES_PASSWORD
 openssl rand -base64 36 | tr -d '\n'  # REDIS_PASSWORD
-openssl rand -hex 16  # BUZZ_S3_ACCESS_KEY
-openssl rand -base64 36 | tr -d '\n'  # BUZZ_S3_SECRET_KEY
 ```
 
 `RELAY_OWNER_PUBKEY` is the owner's 64-character hexadecimal Nostr public key,
 not an `npub1...` value and not a private key.
+
+The S3 access and secret keys are issued by the object-storage provider; do not
+generate arbitrary values for an external R2 bucket.
 
 ## Updating Buzz
 
@@ -83,6 +103,6 @@ Coolify and includes all three fixes above. There is no operational need to
 migrate; the wrapper remains small and Buzz itself still comes directly from
 Block's image.
 
-If you do migrate, back up all four named volumes first and preserve the relay
-private key, owner public key, HMAC secret, database credentials, Redis
-credentials, and S3 credentials.
+If you do migrate, back up all three named volumes and the R2 bucket first.
+Preserve the relay private key, owner public key, HMAC secret, database
+credentials, Redis credentials, and S3 credentials.
